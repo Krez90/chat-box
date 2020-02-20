@@ -1,8 +1,10 @@
 import React from 'react'
 
-const Message = () => {
+const Message = ({pseudo, message}) => {
     return(
-        <p className='user-messages'>Mon message</p>    
+        <p className='user-messages'>
+            {pseudo, message}
+        </p>    
     )
 }
 
