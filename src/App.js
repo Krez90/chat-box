@@ -1,13 +1,20 @@
 import React, { Component, createRef } from 'react'
 import './App.css'
-import Formulaire from './Components/Formulaire'
-import Message from './Components/Message'
+import './animations.css'
 
-// firebase
+import Formulaire from './components/Formulaire'
+import Message from './components/Message'
+
+// Firebase
 import base from './base'
 
-class App extends Component {
+// Animations
+import {
+  CSSTransition,
+  TransitionGroup
+} from 'react-transition-group'
 
+class App extends Component {
   state = {
     messages: {},
     pseudo: this.props.match.params.pseudo
@@ -15,49 +22,62 @@ class App extends Component {
 
   messagesRef = createRef()
 
-  componentDidUpdate (){
-    const ref = this.messagesRef.current
-    ref.scrollTop = ref.scrollHeight
-  }
-
-  componentDidMount (){
-    base.syncState('/',{
-      context:this,
+  componentDidMount () {
+    base.syncState('/', {
+      context: this,
       state: 'messages'
     })
   }
 
-  addMessage = message => {
-    const messages = {...this.state.messages}
-    messages [`message-${Date.now()}`] = message
-    Object
-    .keys(messages)
-    .slice(0, -10)
-    .forEach(key => {messages[key] = null})
-
-   this.setState({ messages })
+  componentDidUpdate () {
+    const ref = this.messagesRef.current
+    ref.scrollTop = ref.scrollHeight
   }
+
+  addMessage = message => {
+    const messages = { ...this.state.messages }
+
+    messages[`message-${Date.now()}`] = message
+    Object
+      .keys(messages)
+      .slice(0, -10)
+      .forEach(key => {
+        messages[key] = null
+      })
+
+    this.setState({ messages })
+  }
+
+  isUser = pseudo => pseudo === this.state.pseudo
 
   render () {
     const messages = Object
       .keys(this.state.messages)
-      .map(key =>(
-        <Message 
-        key={key}
-        message={this.state.messages[key].message}
-        pseudo={this.state.messages[key].pseudo}/>
+      .map(key => (
+        <CSSTransition
+          timeout={200}
+          classNames='fade'
+          key={key}>
+          <Message
+            isUser={this.isUser}
+            message={this.state.messages[key].message}
+            pseudo={this.state.messages[key].pseudo} />
+        </CSSTransition>
       ))
+
     return (
-      <div className='box'> 
-        <div className='messages' ref={this.messagesRef}>
-          <div className='message'>
-            {messages}
+      <div className='box'>
+        <div>
+          <div className='messages' ref={this.messagesRef}>
+            <TransitionGroup className='message'>
+              { messages }
+            </TransitionGroup>
           </div>
         </div>
-      <Formulaire
-      length={140}
-      pseudo={this.state.pseudo}
-      addMessage={this.addMessage} />
+        <Formulaire
+          length={140}
+          pseudo={this.state.pseudo}
+          addMessage={this.addMessage} />
       </div>
     )
   }
